@@ -23,6 +23,7 @@ class Application(tk.Frame):
         self.imageSize=(400,400)
         self.imgColor=[[0,0,0],[0,0,0]]
         self.formula=""
+        self.answer=""
 
         self.CreateWigets()
 
@@ -33,8 +34,8 @@ class Application(tk.Frame):
         self.canvas[1].place(x=770,y=100)
 
         #計算式表示用ラベル
-        self.formulaLabel=tk.Label(root,text=self.formula,font=("Bold",15),wraplength=200)
-        self.formulaLabel.place(x=540,y=200)
+        self.formulaLabel=tk.Label(root,text=self.formula,font=("Bold",30))
+        self.answerLabel=tk.Label(root,text=self.answer,font=("Bold",30))
 
         #ファイル選択ボタン
         image1Button=tk.Button(root,text="画像1を選択",width=15,font=("",15),command=partial(self.SelectImage,0))
@@ -63,11 +64,16 @@ class Application(tk.Frame):
         multiButton.place(x=680,y=380)
         divButton=tk.Button(root,text="÷",width=5,font=("",15),command=partial(self.DivButton))
         divButton.place(x=540,y=420)
-        equalButton=tk.Button(root,text="=",width=11,font=("",15),command=partial(self.EqualButton))
-        equalButton.place(x=610,y=420)
+        equalButton=tk.Button(root,text="=",width=18,font=("",15),command=partial(self.EqualButton))
+        equalButton.place(x=540,y=460)
+        #記号ボタン
+        leftBracketButton=tk.Button(root,text="(",width=5,font=("",15),command=partial(self.LeftBracketButton))
+        leftBracketButton.place(x=610,y=420)
+        rightBracketButton=tk.Button(root,text=")",width=5,font=("",15),command=partial(self.RightBracketButton))
+        rightBracketButton.place(x=680,y=420)
         #消去ボタン
         clearButton=tk.Button(root,text="clear",width=18,font=("",15),command=partial(self.ClearButton))
-        clearButton.place(x=540,y=460)
+        clearButton.place(x=540,y=500)
 
     #ファイル選択
     def SelectImage(self,num):
@@ -119,29 +125,46 @@ class Application(tk.Frame):
         self.formula+="÷"
         self.UpdateFormula()
 
+    #(ボタン
+    def LeftBracketButton(self):
+        self.formula+="("
+        self.UpdateFormula()
+
+    #)ボタン
+    def RightBracketButton(self):
+        self.formula+=")"
+        self.UpdateFormula()
+
     #=ボタン
     def EqualButton(self):
-        self.formula.replace("×","*")
-        self.formula.replace("÷","/")
-        for i in range(0,1):
-            self.formula.replace("R"+str(i+1),str(self.imgColor[i][0]))
-            self.formula.replace("G"+str(i+1),str(self.imgColor[i][1]))
-            self.formula.replace("B"+str(i+1),str(self.imgColor[i][2]))
+        self.formula=self.formula.replace("×","*").replace("÷","/")
 
-        self.answer=eval(self.formula)
-        self.formula+="\n="+str(self.answer)
-        self.UpdateFormula()
+        for i in range(0,2):
+            self.formula=self.formula.replace("R"+str(i+1),str(self.imgColor[i][0]))
+            self.formula=self.formula.replace("G"+str(i+1),str(self.imgColor[i][1]))
+            self.formula=self.formula.replace("B"+str(i+1),str(self.imgColor[i][2]))
+
+        self.answer="= "+str(eval(self.formula))
+        self.DisplayAnswer()
 
     #消去ボタン
     def ClearButton(self):
         self.formula=""
+        self.answer=""
         self.UpdateFormula()
+        self.answerLabel.pack_forget()
 
     #計算式更新
     def UpdateFormula(self):
-        
-        self.formulaLabel=tk.Label(root,text=self.formula,font=("Bold",15),wraplength=220)
-        self.formulaLabel.place(x=540,y=200)
+        self.formulaLabel.pack_forget()
+        self.formulaLabel=tk.Label(root,text=self.formula,font=("Bold",30))
+        self.formulaLabel.pack(side=tk.TOP,anchor=tk.NE)
+
+    #解表示
+    def DisplayAnswer(self):
+        self.answerLabel.pack_forget()
+        self.answerLabel=tk.Label(root,text=self.answer,font=("Bold",30))
+        self.answerLabel.pack(side=tk.TOP,anchor=tk.NE)
 
     #画像読み込み
     def ReadImage(self,num):
@@ -150,7 +173,6 @@ class Application(tk.Frame):
         self.image[num]=cv2.resize(self.image[num],dsize=self.imageSize)
         self.image[num]=cv2.cvtColor(self.image[num],cv2.COLOR_BGR2RGB)
         self.GetPixelValue(num)
-        print(self.imgColor)
 
     #画像表示
     def DisplayImage(self,num):
